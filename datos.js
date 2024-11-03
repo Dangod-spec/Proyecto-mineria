@@ -1,4 +1,5 @@
-var map = L.map('map').setView([4.6115, -74.0817], 12); // Coordenadas de Bogotá
+// Crear el mapa centrado en Bogotá
+var map = L.map('map').setView([4.6115, -74.0817], 12);
 
 // Agregar capa de mapa
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -272,33 +273,18 @@ var localidades = {
     ]
 };
 
+var heat = L.heatLayer([], { radius: 25 }).addTo(map);
 
-// Función para actualizar el mapa de calor
-function actualizarMapa(a) {
-    // Limpiar el mapa de calor existente
-    if (typeof heat !== 'undefined') {
-        map.removeLayer(heat);
+// Función para agregar datos de casos al mapa de calor
+function agregarDatos(año) {
+    var datos = localidades[año];
+    if (datos) {
+        datos.forEach(function(localidad) {
+            // Agregar puntos de calor al mapa
+            heat.addLatLng([localidad.coords[0], localidad.coords[1]], { weight: localidad.casos });
+        });
     }
-    
-    // Crear un nuevo array para las coordenadas
-    var heatData = [];
-
-    // Recoger datos del año seleccionado
-    var datoslocal = localidades[a];
-    for (var i = 0; i < datoslocal.length; i++) {
-        var dato = datoslocal[i];
-        heatData.push([dato.coords[0], dato.coords[1], dato.casos]); // [lat, lon, weight]
-    }
-
-    // Crear la capa de calor
-    var heat = L.heatLayer(heatData, { radius: 25, blur: 15 }).addTo(map);
 }
 
-// Evento para manejar el cambio en el selector de año
-document.getElementById('añoSelector').addEventListener('change', function() {
-    var epocaSelec = this.value;
-    actualizarMapa(epocaSelec); // Actualizar el mapa según el año seleccionado
-});
-
-// Inicializar el mapa con el primer año
-actualizarMapa('2012');
+// Llamar a la función para agregar datos del primer año
+agregarDatos("2012");
